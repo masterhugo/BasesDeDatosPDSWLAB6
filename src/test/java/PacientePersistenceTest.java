@@ -59,6 +59,107 @@ public class PacientePersistenceTest {
             System.out.println("Hubo un error al iniciar o leer y lanzo: "+ex.getMessage());
         }
     }
-    
+    @Test
+    public void AgregarPacienteNuevoUnaConsultaALaBaseDeDatos(){
+        DaoFactory daof = null;
+        try {
+            InputStream input = null;
+            input = ClassLoader.getSystemResourceAsStream("applicationconfig_test.properties");
+            Properties properties=new Properties();
+            properties.load(input);
+            
+            daof=DaoFactory.getInstance(properties);
+            
+            daof.beginSession();
+            DaoPaciente paciente = daof.getDaoPaciente();
+            Paciente p = new Paciente(1, "CC", "Hugo Alvarez", Date.valueOf("1995-05-15"));
+            Set<Consulta> cons = new TreeSet<Consulta>();
+            cons.add(new Consulta(Date.valueOf("2001-01-01"), "Gracias"));
+            p.setConsultas(cons);
+            paciente.save(p);
+            
+            daof.commitTransaction();        
+            daof.endSession();
+        } catch (IOException | PersistenceException ex) {
+            if(daof!=null){
+                try {
+                    daof.endSession();
+                } catch (PersistenceException ex1) {
+                    System.out.println("Hubo un error al cerrar y lanzo: "+ex1.getMessage());
+                }
+            }
+            System.out.println("Hubo un error al iniciar o leer y lanzo: "+ex.getMessage());
+        }
+    }
+    @Test
+    public void AgregarPacienteNuevoMuchasConsultasALaBaseDeDatos(){
+        DaoFactory daof = null;
+        try {
+            InputStream input = null;
+            input = ClassLoader.getSystemResourceAsStream("applicationconfig_test.properties");
+            Properties properties=new Properties();
+            properties.load(input);
+            
+            daof=DaoFactory.getInstance(properties);
+            
+            daof.beginSession();
+            DaoPaciente paciente = daof.getDaoPaciente();
+            Paciente p = new Paciente(1, "CC", "Hugo Alvarez", Date.valueOf("1995-05-15"));
+            Set<Consulta> cons = new TreeSet<Consulta>();
+            cons.add(new Consulta(Date.valueOf("2001-01-01"), "Gracias"));
+            cons.add(new Consulta(Date.valueOf("2001-05-05"), "Ya no"));
+            p.setConsultas(cons);
+            paciente.save(p);
+            
+            
+            
+            daof.commitTransaction();        
+            daof.endSession();
+        } catch (IOException | PersistenceException ex) {
+            if(daof!=null){
+                try {
+                    daof.endSession();
+                } catch (PersistenceException ex1) {
+                    System.out.println("Hubo un error al cerrar y lanzo: "+ex1.getMessage());
+                }
+            }
+            System.out.println("Hubo un error al iniciar o leer y lanzo: "+ex.getMessage());
+        }
+    }
+    @Test
+    public void AgregarPacienteNuevoDenuevoVariasConsultasALaBaseDeDatos(){
+        DaoFactory daof = null;
+        try {
+            InputStream input = null;
+            input = ClassLoader.getSystemResourceAsStream("applicationconfig_test.properties");
+            Properties properties=new Properties();
+            properties.load(input);
+            
+            daof=DaoFactory.getInstance(properties);
+            
+            daof.beginSession();
+            DaoPaciente paciente = daof.getDaoPaciente();
+            paciente.save(new Paciente(1, "CC", "Hugo Alvarez", Date.valueOf("1995-05-15")));
+            Paciente p = new Paciente(1, "CC", "Hugo Alvarez", Date.valueOf("1995-05-15"));
+            Set<Consulta> cons = new TreeSet<Consulta>();
+            cons.add(new Consulta(Date.valueOf("2001-01-01"), "Gracias"));
+            cons.add(new Consulta(Date.valueOf("2001-05-05"), "Ya no"));
+            p.setConsultas(cons);
+            paciente.save(p);
+            
+            
+            daof.commitTransaction();        
+            daof.endSession();
+        } catch (IOException | PersistenceException ex) {
+            if(daof!=null){
+                try {
+                    daof.endSession();
+                } catch (PersistenceException ex1) {
+                    System.out.println("Hubo un error al cerrar y lanzo: "+ex1.getMessage());
+                }
+            }
+            System.out.println("Hubo un error al iniciar o leer y lanzo: "+ex.getMessage());
+        }
+    }
     
 }
