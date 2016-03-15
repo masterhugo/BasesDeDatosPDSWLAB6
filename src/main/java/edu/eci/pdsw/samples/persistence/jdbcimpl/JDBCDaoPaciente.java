@@ -25,6 +25,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  *
@@ -42,26 +45,52 @@ public class JDBCDaoPaciente implements DaoPaciente {
     @Override
     public Paciente load(int idpaciente, String tipoid) throws PersistenceException {
         PreparedStatement ps;
-        /*try {
-            
-            
+        String select = "select id,tipo_id,nombre,fecha_nacimiento,fecha_y_hora,resumen from "
+                + "PACIENTES as p, CONSULTAS as c, where p.id = c.PACIENTES_id and p.tipo_id = c.PACIENTES_tipo_id and p.id = ?"
+                + " and p.tipo_id = ?";
+        Paciente p = null;
+        try {
+            ps = con.prepareStatement(select);
+            ps.setInt(1, idpaciente);
+            ps.setString(2, tipoid);
+            ResultSet rs = ps.executeQuery();
+            Set<Consulta> cons = new HashSet<Consulta>();
+            String nombre = null;
+            Date fechanam = null;
+            while(rs.next()){
+                nombre = rs.getString("nombre");
+                fechanam = rs.getDate("fecha_nacimiento");
+                cons.add(new Consulta(rs.getDate("fecha_y_hora"), rs.getString("resumen")));
+                System.out.println("");
+            }
+            p = new Paciente(idpaciente, tipoid,nombre , fechanam);
+            p.setConsultas(cons);
         } catch (SQLException ex) {
             throw new PersistenceException("An error ocurred while loading "+idpaciente,ex);
-        }*/
-        throw new RuntimeException("No se ha implementado el metodo 'load' del DAOPAcienteJDBC");
+        }
+        return p;
     }
 
     @Override
     public void save(Paciente p) throws PersistenceException {
         PreparedStatement ps;
-        /*try {
-        
-            
+        String insert = "insert into PACIENTES(id,tipo_id,nombre,fecha_nacimiento) values(?,?,?,?)";
+        try {
+            Date fecha = p.getFechaNacimiento();
+            String nombre = p.getNombre();
+            String tipo = p.getTipo_id();
+            int id = p.getId();
+            Set<Consulta> cons = p.getConsultas();
+            ps = con.prepareStatement(insert);
+            ps.setInt(1, id);
+            ps.setString(2, tipo);
+            ps.setString(3, nombre);
+            ps.setDate(4, fecha);
+            ps.executeUpdate();
         } catch (SQLException ex) {
-            throw new PersistenceException("An error ocurred while loading a product.",ex);
-        }*/
+            throw new PersistenceException("No inserto los datos, revisar la base de datos",ex);
+        }
         
-        throw new RuntimeException("No se ha implementado el metodo 'load' del DAOPAcienteJDBC");
 
     }
 
