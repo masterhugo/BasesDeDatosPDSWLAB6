@@ -15,16 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import edu.eci.pdsw.samples.entities.Consulta;
-import edu.eci.pdsw.samples.entities.Paciente;
-import edu.eci.pdsw.samples.persistence.DaoFactory;
-import edu.eci.pdsw.samples.persistence.PersistenceException;
-import java.io.IOException;
-import java.io.InputStream;
+import edu.eci.pdsw.samples.entities.*;
+import edu.eci.pdsw.samples.persistence.*;
+import java.io.*;
 import java.sql.Date;
-import java.util.Properties;
-import org.junit.Before;
-import org.junit.Test;
+import java.util.*;
+import org.junit.*;
 import static org.junit.Assert.*;
 
 /**
@@ -33,30 +29,35 @@ import static org.junit.Assert.*;
  */
 public class PacientePersistenceTest {
     
-    public PacientePersistenceTest() {
-    }
-    
-    @Before
-    public void setUp() {
-    }
-    
     @Test
-    public void databaseConnectionTest() throws IOException, PersistenceException{
-        InputStream input = null;
-        input = ClassLoader.getSystemResourceAsStream("applicationconfig_test.properties");
-        Properties properties=new Properties();
-        properties.load(input);
-        
-        DaoFactory daof=DaoFactory.getInstance(properties);
-        
-        daof.beginSession();
-        
-        //IMPLEMENTACION DE LAS PRUEBAS
-        fail("Pruebas no implementadas");
-
-
-        daof.commitTransaction();
-        daof.endSession();        
+    public void AgregarPacienteNuevoSinConsultasALaBaseDeDatos(){
+        DaoFactory daof = null;
+        try {
+            InputStream input = null;
+            input = ClassLoader.getSystemResourceAsStream("applicationconfig_test.properties");
+            Properties properties=new Properties();
+            properties.load(input);
+            
+            daof=DaoFactory.getInstance(properties);
+            
+            daof.beginSession();
+            DaoPaciente paciente = daof.getDaoPaciente();
+            paciente.save(new Paciente(1, "CC", "Hugo Alvarez", Date.valueOf("1995-05-15")));
+            
+            
+            
+            daof.commitTransaction();        
+            daof.endSession();
+        } catch (IOException | PersistenceException ex) {
+            if(daof!=null){
+                try {
+                    daof.endSession();
+                } catch (PersistenceException ex1) {
+                    System.out.println("Hubo un error al cerrar y lanzo: "+ex1.getMessage());
+                }
+            }
+            System.out.println("Hubo un error al iniciar o leer y lanzo: "+ex.getMessage());
+        }
     }
     
     
