@@ -44,7 +44,9 @@ public class PacientePersistenceTest {
             DaoPaciente paciente = daof.getDaoPaciente();
             paciente.save(new Paciente(1, "CC", "Hugo Alvarez", Date.valueOf("1995-05-15")));
             
-            
+            Paciente p3 = paciente.load(1, "CC");
+            System.out.println(p3);
+            assertEquals(p3.getConsultas().size(), 0);
             
             daof.commitTransaction();        
             daof.endSession();
@@ -56,7 +58,7 @@ public class PacientePersistenceTest {
                     System.out.println("Hubo un error al cerrar y lanzo: "+ex1.getMessage());
                 }
             }
-            System.out.println("Hubo un error al iniciar o leer y lanzo: "+ex.getMessage());
+            System.out.println("Hubo un error al iniciar o leer y lanzo prueba 1: "+ex.getMessage());
         }
     }
     @Test
@@ -72,12 +74,13 @@ public class PacientePersistenceTest {
             
             daof.beginSession();
             DaoPaciente paciente = daof.getDaoPaciente();
-            Paciente p = new Paciente(1, "CC", "Hugo Alvarez", Date.valueOf("1995-05-15"));
-            Set<Consulta> cons = new TreeSet<Consulta>();
+            Paciente p = new Paciente(2, "CC", "Hugo Alvarez", Date.valueOf("1995-05-15"));
+            Set<Consulta> cons = new HashSet<Consulta>();
             cons.add(new Consulta(Date.valueOf("2001-01-01"), "Gracias"));
             p.setConsultas(cons);
             paciente.save(p);
-            
+            Paciente p3 = paciente.load(p.getId(), p.getTipo_id());
+            assertEquals(p3.getConsultas().size(), 1);
             daof.commitTransaction();        
             daof.endSession();
         } catch (IOException | PersistenceException ex) {
@@ -88,7 +91,7 @@ public class PacientePersistenceTest {
                     System.out.println("Hubo un error al cerrar y lanzo: "+ex1.getMessage());
                 }
             }
-            System.out.println("Hubo un error al iniciar o leer y lanzo: "+ex.getMessage());
+            fail("Hubo un error al iniciar o leer y lanzo prueba 2: "+ex.getMessage());
         }
     }
     @Test
@@ -104,15 +107,16 @@ public class PacientePersistenceTest {
             
             daof.beginSession();
             DaoPaciente paciente = daof.getDaoPaciente();
-            Paciente p = new Paciente(1, "CC", "Hugo Alvarez", Date.valueOf("1995-05-15"));
-            Set<Consulta> cons = new TreeSet<Consulta>();
+            Paciente p = new Paciente(3, "CC", "Hugo Alvarez", Date.valueOf("1995-05-15"));
+            Set<Consulta> cons = new HashSet<Consulta>();
             cons.add(new Consulta(Date.valueOf("2001-01-01"), "Gracias"));
             cons.add(new Consulta(Date.valueOf("2001-05-05"), "Ya no"));
             p.setConsultas(cons);
             paciente.save(p);
             
             
-            
+            Paciente p3 = paciente.load(p.getId(), p.getTipo_id());
+            assertEquals(p3.getConsultas().size(), 2);
             daof.commitTransaction();        
             daof.endSession();
         } catch (IOException | PersistenceException ex) {
@@ -123,7 +127,7 @@ public class PacientePersistenceTest {
                     System.out.println("Hubo un error al cerrar y lanzo: "+ex1.getMessage());
                 }
             }
-            System.out.println("Hubo un error al iniciar o leer y lanzo: "+ex.getMessage());
+            fail("Hubo un error al iniciar o leer y lanzo prueba 3: "+ex.getMessage());
         }
     }
     @Test
@@ -139,15 +143,17 @@ public class PacientePersistenceTest {
             
             daof.beginSession();
             DaoPaciente paciente = daof.getDaoPaciente();
-            paciente.save(new Paciente(1, "CC", "Hugo Alvarez", Date.valueOf("1995-05-15")));
-            Paciente p = new Paciente(1, "CC", "Hugo Alvarez", Date.valueOf("1995-05-15"));
-            Set<Consulta> cons = new TreeSet<Consulta>();
+            int i = 0;
+            Paciente p = null;
+            paciente.save(new Paciente(4, "CC", "Lucena", Date.valueOf("2001-01-01")));
+            p = new Paciente(4, "CC", "Lucena", Date.valueOf("2001-01-01"));
+            Set<Consulta> cons = new HashSet<Consulta>();
             cons.add(new Consulta(Date.valueOf("2001-01-01"), "Gracias"));
             cons.add(new Consulta(Date.valueOf("2001-05-05"), "Ya no"));
             p.setConsultas(cons);
             paciente.save(p);
             
-            
+            fail("No debio continuar");
             daof.commitTransaction();        
             daof.endSession();
         } catch (IOException | PersistenceException ex) {
@@ -158,7 +164,7 @@ public class PacientePersistenceTest {
                     System.out.println("Hubo un error al cerrar y lanzo: "+ex1.getMessage());
                 }
             }
-            System.out.println("Hubo un error al iniciar o leer y lanzo: "+ex.getMessage());
+            assertEquals(ex.getMessage(), "No inserto los datos, revisar la base de datos");
         }
     }
     

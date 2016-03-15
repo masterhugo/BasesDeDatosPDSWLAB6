@@ -46,8 +46,8 @@ public class JDBCDaoPaciente implements DaoPaciente {
     public Paciente load(int idpaciente, String tipoid) throws PersistenceException {
         PreparedStatement ps;
         String select = "select id,tipo_id,nombre,fecha_nacimiento,fecha_y_hora,resumen from "
-                + "PACIENTES as p, CONSULTAS as c, where p.id = c.PACIENTES_id and p.tipo_id = c.PACIENTES_tipo_id and p.id = ?"
-                + " and p.tipo_id = ?";
+                + "PACIENTES as p, CONSULTAS as c where p.id = c.PACIENTES_id and p.tipo_id = c.PACIENTES_tipo_id and p.id = ?"
+                + " and p.tipo_id = ?;";
         Paciente p = null;
         try {
             ps = con.prepareStatement(select);
@@ -57,14 +57,17 @@ public class JDBCDaoPaciente implements DaoPaciente {
             Set<Consulta> cons = new HashSet<Consulta>();
             String nombre = null;
             Date fechanam = null;
+            System.out.println(rs);
             while(rs.next()){
+                System.out.println(rs.getInt(1));
                 nombre = rs.getString("nombre");
                 fechanam = rs.getDate("fecha_nacimiento");
                 cons.add(new Consulta(rs.getDate("fecha_y_hora"), rs.getString("resumen")));
-                System.out.println("");
             }
-            p = new Paciente(idpaciente, tipoid,nombre , fechanam);
-            p.setConsultas(cons);
+            if(nombre != null){
+                p = new Paciente(idpaciente,tipoid,nombre,fechanam);
+                p.setConsultas(cons);
+            }
         } catch (SQLException ex) {
             throw new PersistenceException("An error ocurred while loading "+idpaciente,ex);
         }
@@ -74,7 +77,7 @@ public class JDBCDaoPaciente implements DaoPaciente {
     @Override
     public void save(Paciente p) throws PersistenceException {
         PreparedStatement ps;
-        String insert = "insert into PACIENTES(id,tipo_id,nombre,fecha_nacimiento) values(?,?,?,?)";
+        String insert = "insert into PACIENTES(id,tipo_id,nombre,fecha_nacimiento) values(?,?,?,?);";
         try {
             Date fecha = p.getFechaNacimiento();
             String nombre = p.getNombre();
