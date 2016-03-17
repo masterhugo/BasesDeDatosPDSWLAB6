@@ -45,7 +45,6 @@ public class PacientePersistenceTest {
             paciente.save(new Paciente(1, "CC", "Hugo Alvarez", Date.valueOf("1995-05-15")));
             
             Paciente p3 = paciente.load(1, "CC");
-            System.out.println(p3);
             assertEquals(p3.getConsultas().size(), 0);
             
             daof.commitTransaction();        
@@ -58,14 +57,14 @@ public class PacientePersistenceTest {
                     System.out.println("Hubo un error al cerrar y lanzo: "+ex1.getMessage());
                 }
             }
-            System.out.println("Hubo un error al iniciar o leer y lanzo prueba 1: "+ex.getMessage());
+            fail("Hubo un error al iniciar o leer y lanzo prueba 1: "+ex.getMessage());
         }
     }
     @Test
     public void AgregarPacienteNuevoUnaConsultaALaBaseDeDatos(){
         DaoFactory daof = null;
         try {
-            InputStream input = null;
+            InputStream input;
             input = ClassLoader.getSystemResourceAsStream("applicationconfig_test.properties");
             Properties properties=new Properties();
             properties.load(input);
@@ -75,7 +74,7 @@ public class PacientePersistenceTest {
             daof.beginSession();
             DaoPaciente paciente = daof.getDaoPaciente();
             Paciente p = new Paciente(2, "CC", "Hugo Alvarez", Date.valueOf("1995-05-15"));
-            Set<Consulta> cons = new HashSet<Consulta>();
+            Set<Consulta> cons = new HashSet<>();
             cons.add(new Consulta(Date.valueOf("2001-01-01"), "Gracias"));
             p.setConsultas(cons);
             paciente.save(p);
