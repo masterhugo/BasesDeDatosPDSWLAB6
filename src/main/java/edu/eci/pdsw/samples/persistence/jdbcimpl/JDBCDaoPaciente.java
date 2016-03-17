@@ -45,66 +45,31 @@ public class JDBCDaoPaciente implements DaoPaciente {
     @Override
     public Paciente load(int idpaciente, String tipoid) throws PersistenceException {
         PreparedStatement ps;
-        String select2 = "select p.nombre,p.fecha_nacimiento,c.fecha_y_hora,c.resumen from "
-                + "PACIENTES as p, CONSULTAS as c where p.id = c.PACIENTES_id and p.tipo_id = c.PACIENTES_tipo_id and p.id = ?"
-                + " and p.tipo_id = ? ";
-        String select1 = "select count(*) from CONSULTAS as p where PACIENTES_id = ? and PACIENTES_tipo_id = ?";
-        String select3 = "select nombre, fecha_nacimiento from PACIENTES where id=? and tipo_id=?";
+        String select = "select pac.nombre, pac.fecha_nacimiento, con.idCONSULTAS, con.fecha_y_hora, con.resumen from PACIENTES as pac left join CONSULTAS as con on con.PACIENTES_id=pac.id and con.PACIENTES_tipo_id=pac.tipo_id where (con.PACIENTES_id is null or con.PACIENTES_tipo_id is null or con.PACIENTES_id is not null) and pac.id=? and pac.tipo_id=?";
         Paciente p = null;
         String nombre = null;
         Date fechanam = null;
+        ResultSet rs;
         Set<Consulta> cons = new HashSet<Consulta>();
         try {
-            //saber si tiene consultas
-            ps = con.prepareStatement(select1,ResultSet.TYPE_SCROLL_INSENSITIVE, 
-                            ResultSet.CONCUR_UPDATABLE);
-            int cont = -1;
+            ps = con.prepareStatement(select,ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_UPDATABLE);
             ps.setInt(1, idpaciente);
             ps.setString(2, tipoid);
-            ResultSet rs = ps.executeQuery();
-            if(rs.next()){
-                cont = rs.getInt(1);
+            rs = ps.executeQuery();
+            if(!rs.first()) throw new PersistenceException("No encontro ningun resultado.");
+            rs.beforeFirst();
+            while(rs.next()){
+                nombre = rs.getString("nombre");
+                fechanam = rs.getDate("fecha_nacimiento");
+                if(rs.getDate("fecha_y_hora")!= null) cons.add(new Consulta(rs.getDate("fecha_y_hora"), rs.getString("resumen")));
             }
+            if(nombre != null){
+                p = new Paciente(idpaciente,tipoid,nombre,fechanam);
+                p.setConsultas(cons);
+            }else throw new PersistenceException("No encontro ningun resultado.");
             
-            //buscar el usuario con sus consultas
-            if(cont>0){
-                ps = con.prepareStatement(select2,ResultSet.TYPE_SCROLL_INSENSITIVE, 
-                                ResultSet.CONCUR_UPDATABLE);
-                ps.setInt(1, idpaciente);
-                ps.setString(2, tipoid);
-                rs = ps.executeQuery();
-                if(!rs.first()) throw new PersistenceException("No encontro ningun resultado.");
-                rs.beforeFirst();
-                while(rs.next()){
-                    nombre = rs.getString("nombre");
-                    fechanam = rs.getDate("fecha_nacimiento");
-                    cons.add(new Consulta(rs.getDate("fecha_y_hora"), rs.getString("resumen")));
-                }
-                //select = "select fecha_y_hora,fecha_nacimiento from PACIENTES as p where id = ? and tipo_id = ?";
-                if(nombre != null){
-                    p = new Paciente(idpaciente,tipoid,nombre,fechanam);
-                    p.setConsultas(cons);
-                }else throw new PersistenceException("No encontro ningun resultado.");
-            }else{
-                ps = con.prepareStatement(select3,ResultSet.TYPE_SCROLL_INSENSITIVE, 
-                                ResultSet.CONCUR_UPDATABLE);
-                ps.setInt(1, idpaciente);
-                ps.setString(2, tipoid);
-                rs = ps.executeQuery();
-                if(!rs.first()) throw new PersistenceException("No encontro ningun resultado.");
-                rs.beforeFirst();
-                while(rs.next()){
-                    nombre = rs.getString("nombre");
-                    fechanam = rs.getDate("fecha_nacimiento");
-                }
-                if(nombre != null){
-                    p = new Paciente(idpaciente,tipoid,nombre,fechanam);
-                    p.setConsultas(cons);
-                }else throw new PersistenceException("No encontro ningun resultado.");
-            }
         } catch (SQLException ex) {
             throw new PersistenceException("Un error ocurrio cuando se intento cargar el paciente: "+idpaciente+" "+ex.getMessage(),ex);
-            //throw new PersistenceException(ex.getMessage(),ex);
         }
         return p;
     }
